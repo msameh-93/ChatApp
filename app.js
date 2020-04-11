@@ -4,6 +4,8 @@ const http= require("http");    //Core module
 const socketio= require("socket.io");   //returns a function
 const Filter= require("bad-words");     //returns a class - npm library to check for bad words in string
 
+const generateMsg= require(path.join(__dirname,"/Utilities/msgObj"));
+
 const app= express();
 //create an http express server (explicitly to use express app with websocket server)
 const server= http.createServer(app);   
@@ -20,8 +22,8 @@ app.get("/", (request, response) => {
 //Listens to connection event
 io.on("connection", (socket) => {     //socket arg refers currently connected client on socket
     //'emits' to all connections on websocket (EXCEPT 'this')
-    socket.broadcast.emit("message", "A new User has joined");
-    socket.emit("message", "Welcome");  //'emit' to 'this' connection
+    socket.broadcast.emit("message", generateMsg("A user has joined"));
+    socket.emit("message", generateMsg("Welcome"));  //'emit' to 'this' connection
     //io.emit("fromServer");        //All connections on websocket
     socket.on("sendMsg", (message, callback) => {
         const filter= new Filter();
@@ -29,14 +31,14 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
         {
             return callback("Contained bad Language");
         }
-        io.emit("message", message);
+        io.emit("message", generateMsg(message));
         callback("Delivered to Client");
     })
     socket.on("disconnect", ()=> {
-        io.emit("message", "A user has disconnected");
+        io.emit("message",  generateMsg("A user has disconnected"));
     })
-    socket.on("location", (location, callback) => {
-        socket.emit("message", `https://google.com/maps?q=${location.latitude},${location.longtitude}`);
+    socket.on("sendLocation", (location, callback) => {
+        io.emit("location", generateMsg(location));
         callback("Location Shared");
     })
 });
