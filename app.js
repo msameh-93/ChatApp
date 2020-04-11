@@ -2,6 +2,7 @@ const express= require("express");
 const path= require("path");
 const http= require("http");    //Core module
 const socketio= require("socket.io");   //returns a function
+const Filter= require("bad-words");     //returns a class - npm library to check for bad words in string
 
 const app= express();
 //create an http express server (explicitly to use express app with websocket server)
@@ -22,11 +23,21 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
     socket.broadcast.emit("message", "A new User has joined");
     //socket.emit("fromServer");  //'emit' to 'this' connection
     //io.emit("fromServer");        //All connections on websocket
+    socket.on("message", (message, callback) => {
+        const filter= new Filter();
+        if(filter.isProfane(message))
+        {
+            return callback("Contained bad Language");
+        }
+        console.log(`Client sent ${message}`);
+        callback("Delivered to Client");
+    })
     socket.on("disconnect", ()=> {
         io.emit("message", "A user has disconnected");
     })
-    socket.on("location", (location) => {
-        io.emit("message", `https://google.com/maps?q=${location.latitude},${location.longtitude}`);
+    socket.on("location", (location, callback) => {
+        socket.emit("message", `https://google.com/maps?q=${location.latitude},${location.longtitude}`);
+        callback("Location Shared");
     })
 });
 /**************************************************/
