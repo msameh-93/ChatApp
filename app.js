@@ -36,10 +36,16 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
         }
         socket.join(user.room,);   //Groups clients on websocket server in one group to send events
         //'emits' to all connections on websocket (EXCEPT 'this')
-        socket.emit("message", generateMsg(`Welcome ${user.username}!`));  
+        socket.emit("message", generateMsg({
+            username: "Server Room",
+            text: `Welcome ${user.username}!`
+        }));  
         //io.to.emit  send event to a specific body in a room
         //socket.broadcast.to.emit  
-        socket.broadcast.to(user.room).emit("message", generateMsg(`${user.username} has Joined the room!`));
+        socket.broadcast.to(user.room).emit("message", generateMsg({
+            username: "Server Room",
+            text: `${user.username} has Joined the room!`
+        }));
 
         callback(); //no args == no error
     });
@@ -49,18 +55,27 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
         {
             return callback("Contained bad Language");
         }
-        io.emit("message", generateMsg(message));
-        callback("Delivered to Client");
+        io.to(getUser(socket.id).room).emit("message", generateMsg({
+            username: getUser(socket.id).username,
+            text: message
+        }));
+        callback();
     })
     socket.on("sendLocation", (location, callback) => {
-        io.emit("location", generateMsg(location));
-        callback("Location Shared");
+        io.to(getUser(socket.id).room).emit("location", generateMsg({
+            username: getUser(socket.id).username,
+            text: location
+        }));
+        callback();
     })
     socket.on("disconnect", ()=> {
         const delUser= removeUser(socket.id);
         if(delUser.user)
         {
-            io.to(delUser.user.room).emit("message", generateMsg(`${delUser.user.username} has left the room!`));
+            io.to(delUser.user.room).emit("message", generateMsg({
+                username: "Server Room",
+                text: `${delUser.user.username} has left the room!`
+            }));
         }
     })
 });

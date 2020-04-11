@@ -15,7 +15,7 @@ const {username, room }= Qs.parse(location.search, { ignoreQueryPrefix: true /*i
 
 socket.on("message", (msgObj)=> {  //Render messages
     const htmlResponse= Mustache.render(msg_template, {
-        username: username,
+        username: msgObj.username,
         msg: msgObj.text,
         timestamp: moment(msgObj.createdAt).format("hh:mm A")  //from HTML script tag
     });
@@ -23,7 +23,7 @@ socket.on("message", (msgObj)=> {  //Render messages
 })
 socket.on("location", (msgObj) => {
     const htmlResponse= Mustache.render(loc_template, {
-        username: username,
+        username: msgObj.username,
         msg: msgObj.text,
         timestamp: moment(msgObj.createdAt).format("h:mm A")
     })
@@ -34,11 +34,15 @@ form.addEventListener("submit", (event)=> {
     //Disable the form button
     formButton.setAttribute("disabled", "disabled");
     //3rd arg is a CB function that gets called with .on
-    socket.emit("sendMsg", formInput.value, (callbackArg)=> {  
+    socket.emit("sendMsg", formInput.value, (error)=> {  
         //re enable form button
         formButton.removeAttribute("disabled");
         formInput.value= "";
         formInput.focus();
+        if(error)
+        {
+            return console.log(error);
+        }
     });
 })
 
