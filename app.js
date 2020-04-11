@@ -46,7 +46,10 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
             username: "Server Room",
             text: `${user.username} has Joined the room!`
         }));
-
+        io.emit(user.room).emit("roomData", {
+            users: getUsersInRoom(user.room),
+            room: user.room
+        });
         callback(); //no args == no error
     });
     socket.on("sendMsg", (message, callback) => {
@@ -76,6 +79,10 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
                 username: "Server Room",
                 text: `${delUser.user.username} has left the room!`
             }));
+            io.emit(delUser.user.room).emit("roomData", {
+                users: getUsersInRoom(delUser.user.room),
+                room: delUser.user.room
+            });
         }
     })
 });
