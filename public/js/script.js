@@ -10,11 +10,13 @@ const msg_container= document.querySelector("#msg_container");
 const msg_template= document.querySelector("#msg_template").innerHTML;  
 const loc_template= document.querySelector("#loc_template").innerHTML;
 
+
+qs.parse(location.search);      //from HTML script tag
 socket.on("message", (msgObj)=> {  //Render messages
     console.log(msgObj);
     const htmlResponse= Mustache.render(msg_template, {
         msg: msgObj.text,
-        timestamp: moment(msgObj.createdAt).format("hh:mm A")  //in index.pug script tag
+        timestamp: moment(msgObj.createdAt).format("hh:mm A")  //from HTML script tag
     });
     msg_container.insertAdjacentHTML("beforeend", htmlResponse);
 })

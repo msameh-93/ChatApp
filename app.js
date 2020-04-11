@@ -18,6 +18,9 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.get("/", (request, response) => {
     response.status(200).render("index");
 });
+app.get("/chat", (request, response) => {
+    response.status(200).render("ChatRoom");
+});
 /******Socket IO********/
 //Listens to connection event
 io.on("connection", (socket) => {     //socket arg refers currently connected client on socket

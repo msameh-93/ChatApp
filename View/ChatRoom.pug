@@ -1,0 +1,38 @@
+head
+    title Chat Application
+    link(rel='icon' href='/img/favicon.png')
+    link(rel='stylesheet' href='/css/styles.min.css')
+body
+    div.chat
+        div.chat__sidebar
+        div.chat__main
+            div#msg_container.chat__messages
+            div.compose
+                form#msg-form
+                    input(type='text')#msg_field
+                    button(type='submit') Send
+                br
+                button#loc Send Location
+
+    //----------------------------------------
+    script(type='text/html')#msg_template
+        div.message
+            p 
+                span.message__name UserName
+                span.message__meta {{timestamp}}:
+            p {{msg}}
+
+    script(type='text/html')#loc_template
+        div.message
+            p 
+                span.message__name UserName
+                span.message__meta {{timestamp}}:
+            p 
+                a(href='{{msg}}') My Current Location!
+
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/qs/6.6.0/qs.min.js')
+    script(src='/socket.io/socket.io.js')
+
+    script(src='/js/script.js')
