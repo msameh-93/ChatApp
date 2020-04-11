@@ -3,6 +3,9 @@ head
 
 body
     h1 test
-
+    form#msg-form
+        input(type='text', name='msg')
+        button(type='submit') Send
+    
     script(src='/socket.io/socket.io.js')
     script(src='/js/script.js')
