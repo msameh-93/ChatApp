@@ -18,11 +18,15 @@ app.get("/", (request, response) => {
 /******Socket IO********/
 //Listens to connection event
 io.on("connection", (socket) => {     //socket arg refers currently connected client on socket
-    console.log("User connected");
+    //'emits' to all connections on websocket (EXCEPT 'this')
+    socket.broadcast.emit("message", "A new User has joined");
     //socket.emit("fromServer");  //'emit' to 'this' connection
-    //socket.broadcast.emit("fromServer");    //'emits' to all connections on websocket (EXCEPT 'this')
-    socket.on("msgReceived", (msg)=> {
-        console.log(`Client sent ${msg}`);
+    //io.emit("fromServer");        //All connections on websocket
+    socket.on("disconnect", ()=> {
+        io.emit("message", "A user has disconnected");
+    })
+    socket.on("location", (location) => {
+        io.emit("message", `https://google.com/maps?q=${location.latitude},${location.longtitude}`);
     })
 });
 /**************************************************/
