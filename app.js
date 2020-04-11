@@ -21,15 +21,15 @@ app.get("/", (request, response) => {
 io.on("connection", (socket) => {     //socket arg refers currently connected client on socket
     //'emits' to all connections on websocket (EXCEPT 'this')
     socket.broadcast.emit("message", "A new User has joined");
-    //socket.emit("fromServer");  //'emit' to 'this' connection
+    socket.emit("message", "Welcome");  //'emit' to 'this' connection
     //io.emit("fromServer");        //All connections on websocket
-    socket.on("message", (message, callback) => {
+    socket.on("sendMsg", (message, callback) => {
         const filter= new Filter();
         if(filter.isProfane(message))
         {
             return callback("Contained bad Language");
         }
-        console.log(`Client sent ${message}`);
+        io.emit("message", message);
         callback("Delivered to Client");
     })
     socket.on("disconnect", ()=> {
