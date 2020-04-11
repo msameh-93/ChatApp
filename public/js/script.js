@@ -10,11 +10,12 @@ const msg_container= document.querySelector("#msg_container");
 const msg_template= document.querySelector("#msg_template").innerHTML;  
 const loc_template= document.querySelector("#loc_template").innerHTML;
 
+//from HTML script tag
+const {username, room }= Qs.parse(location.search, { ignoreQueryPrefix: true /*ignores ?*/});      
 
-qs.parse(location.search);      //from HTML script tag
 socket.on("message", (msgObj)=> {  //Render messages
-    console.log(msgObj);
     const htmlResponse= Mustache.render(msg_template, {
+        username: username,
         msg: msgObj.text,
         timestamp: moment(msgObj.createdAt).format("hh:mm A")  //from HTML script tag
     });
@@ -22,6 +23,7 @@ socket.on("message", (msgObj)=> {  //Render messages
 })
 socket.on("location", (msgObj) => {
     const htmlResponse= Mustache.render(loc_template, {
+        username: username,
         msg: msgObj.text,
         timestamp: moment(msgObj.createdAt).format("h:mm A")
     })
@@ -37,7 +39,6 @@ form.addEventListener("submit", (event)=> {
         formButton.removeAttribute("disabled");
         formInput.value= "";
         formInput.focus();
-        console.log(callbackArg);
     });
 })
 
@@ -51,10 +52,19 @@ loc.addEventListener("click", (event)=> {
     }
     navigator.geolocation.getCurrentPosition((position)=> {
         const url= `https://google.com/maps?q=${position.coords.latitude},${position.coords.longtitude}`;
-        console.log(position);
         socket.emit("sendLocation", url, (locMsg) => {
-                console.log(locMsg);
                 loc.removeAttribute("disabled");
             });
     });
+});
+
+socket.emit("join", {
+    username: username,
+    room: room
+}, (error) => {
+    if(error)   //hande error
+    {
+        alert(error);
+        location.href= "/";
+    }
 });

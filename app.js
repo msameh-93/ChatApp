@@ -5,6 +5,7 @@ const socketio= require("socket.io");   //returns a function
 const Filter= require("bad-words");     //returns a class - npm library to check for bad words in string
 
 const generateMsg= require(path.join(__dirname,"/Utilities/msgObj"));
+const { addUser, removeUser, getUser, getUsersInRoom }= require(path.join(__dirname,"/Utilities/users"));
 
 const app= express();
 //create an http express server (explicitly to use express app with websocket server)
@@ -24,10 +25,24 @@ app.get("/chat", (request, response) => {
 /******Socket IO********/
 //Listens to connection event
 io.on("connection", (socket) => {     //socket arg refers currently connected client on socket
-    //'emits' to all connections on websocket (EXCEPT 'this')
-    socket.broadcast.emit("message", generateMsg("A user has joined"));
-    socket.emit("message", generateMsg("Welcome"));  //'emit' to 'this' connection
-    //io.emit("fromServer");        //All connections on websocket
+    //socket.broadcast.emit("message", "A new User has joined");
+    socket.on("join", (joinObj, callback) => {
+        //socket.id= uinque identifier for tht particular (client/connection)
+        //Store for global access
+        const {error, user}= addUser({id: socket.id, username: joinObj.username, room: joinObj.room});
+        if(error)
+        {
+            return callback(error);
+        }
+        socket.join(user.room,);   //Groups clients on websocket server in one group to send events
+        //'emits' to all connections on websocket (EXCEPT 'this')
+        socket.emit("message", generateMsg(`Welcome ${user.username}!`));  
+        //io.to.emit  send event to a specific body in a room
+        //socket.broadcast.to.emit  
+        socket.broadcast.to(user.room).emit("message", generateMsg(`${user.username} has Joined the room!`));
+
+        callback(); //no args == no error
+    });
     socket.on("sendMsg", (message, callback) => {
         const filter= new Filter();
         if(filter.isProfane(message))
@@ -37,12 +52,16 @@ io.on("connection", (socket) => {     //socket arg refers currently connected cl
         io.emit("message", generateMsg(message));
         callback("Delivered to Client");
     })
-    socket.on("disconnect", ()=> {
-        io.emit("message",  generateMsg("A user has disconnected"));
-    })
     socket.on("sendLocation", (location, callback) => {
         io.emit("location", generateMsg(location));
         callback("Location Shared");
+    })
+    socket.on("disconnect", ()=> {
+        const delUser= removeUser(socket.id);
+        if(delUser.user)
+        {
+            io.to(delUser.user.room).emit("message", generateMsg(`${delUser.user.username} has left the room!`));
+        }
     })
 });
 /**************************************************/
